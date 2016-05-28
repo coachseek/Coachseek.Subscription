@@ -1,33 +1,35 @@
-// var sql = require('mssql'),
-// 	sqlConfig = {
-// 	    user: 'coachseek@idlf08a7kb',
-// 	    password: 'W#ggie1267',
-// 	    server: 'idlf08a7kb.database.windows.net',
-// 	    database: 'Coachseek-Api-Testing',
 
-// 	    options: {
-// 	        encrypt: true
-// 	    }
-// 	}
+/**
+ * Module dependencies.
+ */
 
-// sql.connect(sqlConfig).then(function() {
-// 	console.log("CONNECTED");
-// });
+var express = require('express')
+  , routes = require('./routes')
+  , subscription = require('./routes/subscription')
+  , http = require('http')
+  , path = require('path');
 
-// sql.on('error', function(err) {
-// 	console.log(err);
-// });
-
-var http = require('http');
-var express = require('express');
 var app = express();
 
-app.get('/', function(req,res) {
-    res.send('hello');
+app.configure(function(){
+  app.set('port', process.env.PORT || 3000);
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.use(express.favicon());
+  app.use(express.logger('dev'));
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(app.router);
+  app.use(express.static(path.join(__dirname, 'public')));
 });
 
-app.get('/update-sub', function (req, res) {
-  res.send('UPDATE SUB')
+app.configure('development', function(){
+  app.use(express.errorHandler());
 });
 
-http.createServer(app).listen(8080);
+app.get('/', routes.index);
+app.post('/update-subscription', subscription.update);
+
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("Express server listening on port " + app.get('port'));
+});
